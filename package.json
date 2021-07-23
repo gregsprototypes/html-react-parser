@@ -37,7 +37,7 @@
     "dom"
   ],
   "dependencies": {
-    "html-dom-parser": "github:ibm-public-repo/html-dom-parser#master",
+    "html-dom-parser": "github:gregsprototypes/html-dom-parser",
     "react-property": "1.0.1",
     "style-to-js": "1.1.0"
   },
