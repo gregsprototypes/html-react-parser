@@ -34,6 +34,10 @@ parse('<p>Hello, World!</p>'); // React.createElement('p', {}, 'Hello, World!')
 - [Install](#install)
 - [Usage](#usage)
   - [replace](#replace)
+    - [replace with TypeScript](#replace-with-typescript)
+    - [replace element and children](#replace-element-and-children)
+    - [replace element attributes](#replace-element-attributes)
+    - [replace and remove element](#replace-and-remove-element)
   - [library](#library)
   - [htmlparser2](#htmlparser2)
   - [trim](#trim)
@@ -51,6 +55,7 @@ parse('<p>Hello, World!</p>'); // React.createElement('p', {}, 'Hello, World!')
   - [Don't change case of tags](#dont-change-case-of-tags)
   - [TS Error: Property 'attribs' does not exist on type 'DOMNode'](#ts-error-property-attribs-does-not-exist-on-type-domnode)
   - [Can I enable `trim` for certain elements?](#can-i-enable-trim-for-certain-elements)
+  - [Webpack build warnings](#webpack-build-warnings)
 - [Performance](#performance)
 - [Contributors](#contributors)
   - [Code Contributors](#code-contributors)
@@ -67,13 +72,13 @@ parse('<p>Hello, World!</p>'); // React.createElement('p', {}, 'Hello, World!')
 [NPM](https://www.npmjs.com/package/html-react-parser):
 
 ```sh
-$ npm install html-react-parser --save
+npm install html-react-parser --save
 ```
 
 [Yarn](https://yarnpkg.com/package/html-react-parser):
 
 ```sh
-$ yarn add html-react-parser
+yarn add html-react-parser
 ```
 
 [CDN](https://unpkg.com/html-react-parser/):
@@ -178,6 +183,8 @@ parse('<p id="replace">text</p>', {
 });
 ```
 
+#### replace with TypeScript
+
 For TypeScript projects, you may need to check that `domNode` is an instance of domhandler's `Element`:
 
 ```tsx
@@ -193,7 +200,11 @@ const options: HTMLReactParserOptions = {
 };
 ```
 
-The following [example](https://repl.it/@remarkablemark/html-react-parser-replace-example) modifies the element along with its children:
+If you're having issues with `domNode instanceof Element`, try this [alternative solution](https://github.com/remarkablemark/html-react-parser/issues/221#issuecomment-771600574).
+
+#### replace element and children
+
+Replace the element and its children (see [demo](https://repl.it/@remarkablemark/html-react-parser-replace-example)):
 
 ```jsx
 import parse, { domToReact } from 'html-react-parser';
@@ -243,6 +254,8 @@ HTML output:
 
 <!-- prettier-ignore-end -->
 
+#### replace element attributes
+
 Convert DOM attributes to React props with `attributesToProps`:
 
 ```jsx
@@ -270,6 +283,8 @@ HTML output:
 <div class="prettify" style="background:#fff;text-align:center"></div>
 ```
 
+#### replace and remove element
+
 [Exclude](https://repl.it/@remarkablemark/html-react-parser-56) an element from rendering by replacing it with `<React.Fragment>`:
 
 ```jsx
@@ -286,7 +301,7 @@ HTML output:
 
 ### library
 
-This option specifies the library that creates elements. The default library is **React**.
+The `library` option specifies the UI library. The default library is **React**.
 
 To use Preact:
 
@@ -316,17 +331,11 @@ parse('<br>', {
 
 ### htmlparser2
 
-Along with the default [htmlparser2 options](https://github.com/fb55/htmlparser2/wiki/Parser-options#option-xmlmode), the parser also sets:
+> `htmlparser2` options **do not work on the client-side** (browser) and **only works on the server-side** (Node.js). By overriding `htmlparser2` options, universal rendering can break.
 
-```json
-{
-  "lowerCaseAttributeNames": false
-}
-```
+Default [htmlparser2 options](https://github.com/fb55/htmlparser2/wiki/Parser-options#option-xmlmode) can be overridden in >=[0.12.0](https://github.com/remarkablemark/html-react-parser/tree/v0.12.0).
 
-Since [v0.12.0](https://github.com/remarkablemark/html-react-parser/tree/v0.12.0), the htmlparser2 options can be overridden.
-
-The following example enables [`xmlMode`](https://github.com/fb55/htmlparser2/wiki/Parser-options#option-xmlmode) but disables [`lowerCaseAttributeNames`](https://github.com/fb55/htmlparser2/wiki/Parser-options#option-lowercaseattributenames):
+To enable [`xmlMode`](https://github.com/fb55/htmlparser2/wiki/Parser-options#option-xmlmode):
 
 ```js
 parse('<p /><p />', {
@@ -336,17 +345,15 @@ parse('<p /><p />', {
 });
 ```
 
-> **WARNING**: `htmlparser2` options do not apply on the _client-side_ (browser). The options only apply on the _server-side_ (Node.js). By overriding `htmlparser2` options, universal rendering can break. Do this at your own risk.
-
 ### trim
 
-Normally, whitespace is preserved:
+By default, whitespace is preserved:
 
 ```js
 parse('<br>\n'); // [React.createElement('br'), '\n']
 ```
 
-Enable the `trim` option to remove whitespace:
+To remove whitespace, enable the `trim` option:
 
 ```js
 parse('<br>\n', { trim: true }); // React.createElement('br')
@@ -455,12 +462,34 @@ The TypeScript error occurs because `DOMNode` needs be an instance of domhandler
 
 Yes, you can enable or disable [`trim`](#trim) for certain elements using the [`replace`](#replace) option. See [#205](https://github.com/remarkablemark/html-react-parser/issues/205).
 
+### Webpack build warnings
+
+If you see the Webpack build warning:
+
+```
+export 'default' (imported as 'parse') was not found in 'html-react-parser'
+```
+
+Then update your Webpack config to:
+
+```js
+// webpack.config.js
+module.exports = {
+  // ...
+  resolve: {
+    mainFields: ['browser', 'main', 'module'],
+  },
+};
+```
+
+See [#238](https://github.com/remarkablemark/html-react-parser/issues/238) and [#213](https://github.com/remarkablemark/html-react-parser/issues/213).
+
 ## Performance
 
 Run benchmark:
 
 ```sh
-$ npm run test:benchmark
+npm run test:benchmark
 ```
 
 Output of benchmark run on MacBook Pro 2017:
@@ -474,7 +503,7 @@ html-to-react - Complex x 8,118 ops/sec ±2.99% (82 runs sampled)
 Run [Size Limit](https://github.com/ai/size-limit):
 
 ```sh
-$ npx size-limit
+npx size-limit
 ```
 
 ## Contributors
